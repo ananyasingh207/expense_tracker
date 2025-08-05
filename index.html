@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        blueprimary: '#2E5077',
+                        tealaccent: '#4DA1A9',
+                        mint: '#79D7BE',
+                        offwhite: '#F6F4F0',
+                        bluehover: '#243e5c'
+                    },
+                    screens: {
+                        'xs': '280px'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        #expense-list.loading {
+            opacity: 0.7;
+            transition: opacity 0.2s ease-in-out;
+        }
+        .break-all {
+            word-break: break-all;
+        }
+        .force-scrollbar {
+            overflow-x: scroll !important;
+            scrollbar-width: auto;
+        }
+    </style>
+</head>
+<body class="bg-offwhite min-h-screen flex flex-col text-blueprimary">
+    <header class="bg-blueprimary text-white p-2 xs:p-3 sm:p-4">
+        <h1 class="text-base xs:text-xl sm:text-2xl md:text-3xl font-bold text-center">Expense Tracker</h1>
+    </header>
+    <main class="max-w-full mx-auto p-2 xs:p-3 sm:p-4 md:p-6 lg:p-8 flex-grow space-y-4 xs:space-y-6 sm:space-y-8">
+        <!-- Form Section -->
+        <section class="bg-white shadow-md rounded-lg p-2 xs:p-3 sm:p-4 md:p-6 border border-mint">
+            <h2 class="text-base xs:text-lg sm:text-xl md:text-2xl font-bold mb-2 xs:mb-3 sm:mb-4 text-blueprimary">Add/Edit Expense</h2>
+            <form id="expense-form" class="grid grid-cols-1 sm:grid-cols-2 gap-2 xs:gap-3 sm:gap-4">
+                <input type="hidden" id="expense-id" aria-hidden="true">
+                <div>
+                    <label for="amount" class="block text-[10px] xs:text-xs sm:text-sm font-semibold text-blueprimary mb-1">Amount</label>
+                    <input type="number" id="amount" step="0.01" required
+                        class="w-full border border-mint rounded-lg px-2 py-1 xs:px-3 xs:py-1.5 text-[10px] xs:text-xs sm:text-sm focus:ring-2 focus:ring-tealaccent"
+                        aria-describedby="amount-error">
+                </div>
+                <div>
+                    <label for="category" class="block text-[10px] xs:text-xs sm:text-sm font-semibold text-blueprimary mb-1">Category</label>
+                    <select id="category" required
+                        class="w-full border border-mint rounded-lg px-2 py-1 xs:px-3 xs:py-1.5 text-[10px] xs:text-xs sm:text-sm focus:ring-2 focus:ring-tealaccent"
+                        aria-describedby="category-error">
+                        <option value="">Select Category</option>
+                        <option value="Bills">Bills</option>
+                        <option value="Clothes">Clothes</option>
+                        <option value="Education">Education</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Food">Food</option>
+                        <option value="Groceries">Groceries</option>
+                        <option value="Health">Health</option>
+                        <option value="Housing">Housing</option>
+                        <option value="Transport">Transport</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="date" class="block text-[10px] xs:text-xs sm:text-sm font-semibold text-blueprimary mb-1">Date</label>
+                    <input type="date" id="date" required
+                        class="w-full border border-mint rounded-lg px-2 py-1 xs:px-3 xs:py-1.5 text-[10px] xs:text-xs sm:text-sm focus:ring-2 focus:ring-tealaccent"
+                        aria-describedby="date-error">
+                </div>
+                <div>
+                    <label for="description" class="block text-[10px] xs:text-xs sm:text-sm font-semibold text-blueprimary mb-1">Description</label>
+                    <input type="text" id="description"
+                        class="w-full border border-mint rounded-lg px-2 py-1 xs:px-3 xs:py-1.5 text-[10px] xs:text-xs sm:text-sm focus:ring-2 focus:ring-tealaccent"
+                        aria-describedby="description-error">
+                </div>
+                <div class="sm:col-span-2 relative">
+                    <button type="submit" id="submit-btn"
+                        class="bg-blueprimary font-bold text-white w-full py-3 xs:py-2 sm:py-3 px-4 xs:px-3 sm:px-4 rounded-lg hover:bg-bluehover transition text-[10px] xs:text-xs sm:text-sm">
+                        Add Expense
+                    </button>
+
+                    <div id="form-loading" class="hidden absolute inset-0 flex items-center justify-center bg-white/50">
+                        <div class="animate-spin h-4 w-4 xs:h-5 xs:w-5 sm:h-6 sm:w-6 border-2 xs:border-3 sm:border-4 border-tealaccent border-t-transparent rounded-full"></div>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <!-- Filter Section -->
+        <section class="bg-white shadow-md rounded-lg p-2 xs:p-3 sm:p-4 md:p-6 border border-mint">
+            <h2 class="text-base xs:text-lg sm:text-xl md:text-2xl font-bold mb-2 xs:mb-3 sm:mb-4 text-blueprimary">Filter Expenses</h2>
+            <div class="flex flex-col sm:flex-row sm:space-x-4 space-y-2 xs:space-y-3 sm:space-y-0">
+                <div class="flex-1">
+                    <label for="filter-category" class="block text-[10px] xs:text-xs sm:text-sm font-semibold text-blueprimary mb-1">Category</label>
+                    <select id="filter-category"
+                        class="w-full border border-mint rounded-lg px-2 py-1 xs:px-3 xs:py-1.5 text-[10px] xs:text-xs sm:text-sm focus:ring-2 focus:ring-tealaccent">
+                        <option value="">All Categories</option>
+                        <option value="Bills">Bills</option>
+                        <option value="Clothes">Clothes</option>
+                        <option value="Education">Education</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Food">Food</option>
+                        <option value="Groceries">Groceries</option>
+                        <option value="Health">Health</option>
+                        <option value="Housing">Housing</option>
+                        <option value="Transport">Transport</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="flex-1">
+                    <label for="filter-date" class="block text-[10px] xs:text-xs sm:text-sm font-semibold text-blueprimary mb-1">Date</label>
+                    <input type="date" id="filter-date"
+                        class="w-full border border-mint rounded-lg px-2 py-1 xs:px-3 xs:py-1.5 text-[10px] xs:text-xs sm:text-sm focus:ring-2 focus:ring-tealaccent">
+                </div>
+            </div>
+        </section>
+
+        <!-- Expense Table -->
+        <section>
+        <h2 class="text-base xs:text-lg sm:text-xl md:text-2xl font-bold text-blueprimary mb-2 xs:mb-3 sm:mb-4">Expenses</h2>
+
+         <div class="force-scrollbar">
+            <div class="xs:overflow-x-auto sm:overflow-x-auto md:overflow-x-visible lg:overflow-x-visible border border-mint rounded-lg">
+                <table id="expense-list" class="min-w-full bg-white shadow-md border-separate border-spacing-1 xs:border-spacing-1 sm:border-spacing-2 table-auto">
+                <thead class="bg-blueprimary text-white text-[10px] xs:text-xs sm:text-sm uppercase font-bold">
+                    <tr>
+                    <th class="py-1 xs:py-2 sm:py-3 px-1 xs:px-2 sm:px-4 text-left w-[15%] min-w-[50px] rounded-md truncate">Amount</th>
+                    <th class="py-1 xs:py-2 sm:py-3 px-1 xs:px-2 sm:px-4 text-left w-[20%] min-w-[50px] rounded-md truncate">Category</th>
+                    <th class="py-1 xs:py-2 sm:py-3 px-1 xs:px-2 sm:px-4 text-left w-[20%] min-w-[50px] rounded-md truncate">Date</th>
+                    <th class="py-1 xs:py-2 sm:py-3 px-1 xs:px-2 sm:px-4 text-left w-[30%] min-w-[70px] rounded-md truncate">Description</th>
+                    <th class="py-1 xs:py-2 sm:py-3 px-1 xs:px-2 sm:px-4 text-left w-[15%] min-w-[80px] rounded-md truncate">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="text-blueprimary font-medium text-[10px] xs:text-xs sm:text-sm">
+                </tbody>
+                </table>
+            </div>
+        </div>
+        </section>
+
+        <!-- Summary Section -->
+       <section class="bg-gradient-to-br from-[#F6F4F0] to-white shadow-lg rounded-2xl p-3 xs:p-4 sm:p-5 md:p-6 border border-mint">
+            <div class="flex items-center gap-2 mb-3">
+                <h2 class="text-lg xs:text-lg sm:text-xl md:text-2xl font-bold text-blueprimary">Summary</h2>
+            </div>
+            <div class="bg-tealaccent/10 text-tealaccent font-bold text-xl xs:text-lg sm:text-xl md:text-2xl rounded-xl px-4 py-3 shadow-sm inline-block mb-4">
+                Total: ₹<span id="total-amount">0.00</span>
+            </div>
+            <div id="category-breakdown"
+                class="text-xs xs:text-sm sm:text-base md:text-lg text-blueprimary font-semibold leading-snug space-y-1">
+            </div>
+        </section>
+
+        <!-- Error Message -->
+        <div id="error-message" class="hidden text-red-500 text-center font-semibold text-[10px] xs:text-xs sm:text-sm" role="alert"></div>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>
