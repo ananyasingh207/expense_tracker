@@ -1,4 +1,0 @@
-{
-    "appService.defaultWebAppToDeploy": "/subscriptions/90b7a44d-e32e-476c-b1fb-185c722b0b17/resourceGroups/appsvc_linux_centralindia/providers/Microsoft.Web/sites/expense-tracker-25",
-    "appService.deploySubpath": "."
-}
