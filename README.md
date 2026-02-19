@@ -1,4 +1,4 @@
-# Expense Tracker – CI/CD & DevOps Pipeline
+# Expense Tracker – CI/CD Pipeline
 
 This repository demonstrates a complete **CI/CD pipeline implementation using GitHub Actions and Azure Web Apps** for deploying a Node.js application.
 
